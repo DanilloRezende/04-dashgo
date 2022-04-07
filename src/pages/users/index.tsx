@@ -1,4 +1,5 @@
 import { Box, Button, Checkbox, Flex, Heading, Icon, Table, Tbody, Td, Th, Thead, Tr, Text, useBreakpointValue, Spinner, Link,  } from "@chakra-ui/react";
+import { GetServerSideProps } from "next";
 import NextLink from "next/link";
 import { useState } from "react";
 import { RiAddLine, RiPencilLine } from "react-icons/ri";
@@ -6,12 +7,14 @@ import { Header } from "../../components/Header";
 import { Pagination } from "../../components/Pagination";
 import { Sidebar } from "../../components/Sidebar";
 import { api } from "../../services/api";
-import { useUsers } from "../../services/Hooks/useUsers";
+import { useUsers, getUsers } from "../../services/Hooks/useUsers";
 import { queryClient } from "../../services/queryClient";
 
-export default function UserList() {
+export default function UserList({users}) {
     const [page, setPage] = useState(1)
-    const {data, isLoading, isFetching, error} = useUsers(page)
+    const {data, isLoading, isFetching, error} = useUsers(page, {
+        initialData: users,
+    })
 
 
     const isWideversion = useBreakpointValue({
@@ -19,7 +22,7 @@ export default function UserList() {
         lg: true,
     })
 
-    async function handlePrefetchUser(userId: number) {
+    async function handlePrefetchUser(userId: string) {
         await queryClient.prefetchQuery(['user', userId], async () => {
             const response = await api.get(`users/${userId}`)
             
@@ -88,7 +91,7 @@ export default function UserList() {
                             </Td>
                             <Td>
                                 <Box>
-                                    <Link color='purple.400' onMouseEnter={() => handlePrefetchUser(Number(user.id))}>
+                                    <Link color='purple.400' onMouseEnter={() => handlePrefetchUser(user.id)}>
                                         <Text fontWeight='bold'>{user.name}</Text>
                                     </Link>
                                     <Text fontSize='sm' color='gray.300'>{user.email}</Text>
@@ -127,6 +130,3 @@ export default function UserList() {
     )
 }
 
-function useBreackpointValue() {
-    throw new Error("Function not implemented.");
-}
